@@ -1,0 +1,139 @@
+{
+  "info": {
+    "_postman_id": "fundsroom-erp-collection",
+    "name": "Fundsroom Industrial ERP APIs",
+    "description": "Collection of all REST API endpoints for Fundsroom Infotech Technical Case Study",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login - Admin",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@fundsroom.com\",\n  \"password\": \"admin123\"\n}"
+            },
+            "url": { "raw": "http://localhost:5000/api/auth/login", "protocol": "http", "host": ["localhost"], "port": "5000", "path": ["api", "auth", "login"] }
+          }
+        },
+        {
+          "name": "Login - Sales User",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"sales@fundsroom.com\",\n  \"password\": \"sales123\"\n}"
+            },
+            "url": { "raw": "http://localhost:5000/api/auth/login", "protocol": "http", "host": ["localhost"], "port": "5000", "path": ["api", "auth", "login"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Enquiries",
+      "item": [
+        {
+          "name": "Get All Enquiries",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "http://localhost:5000/api/enquiries", "protocol": "http", "host": ["localhost"], "port": "5000", "path": ["api", "enquiries"] }
+          }
+        },
+        {
+          "name": "Create Multi-product Enquiry",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customer_id\": 1,\n  \"required_date\": \"2026-10-20\",\n  \"notes\": \"Production expansion batch\",\n  \"items\": [\n    { \"product_id\": 1, \"quantity\": 100 },\n    { \"product_id\": 4, \"quantity\": 40 }\n  ]\n}"
+            },
+            "url": { "raw": "http://localhost:5000/api/enquiries", "protocol": "http", "host": ["localhost"], "port": "5000", "path": ["api", "enquiries"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Quotations",
+      "item": [
+        {
+          "name": "Get All Quotations",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "http://localhost:5000/api/quotations", "protocol": "http", "host": ["localhost"], "port": "5000", "path": ["api", "quotations"] }
+          }
+        },
+        {
+          "name": "Create Quotation",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"enquiry_id\": 1,\n  \"valid_until\": \"2026-11-30\",\n  \"items\": [\n    {\n      \"product_id\": 1,\n      \"quantity\": 10,\n      \"unit_price\": 4500,\n      \"discount_percentage\": 10,\n      \"gst_percentage\": 18\n    }\n  ]\n}"
+            },
+            "url": { "raw": "http://localhost:5000/api/quotations", "protocol": "http", "host": ["localhost"], "port": "5000", "path": ["api", "quotations"] }
+          }
+        },
+        {
+          "name": "Convert Accepted Quotation to Sales Order",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "http://localhost:5000/api/quotations/1/convert", "protocol": "http", "host": ["localhost"], "port": "5000", "path": ["api", "quotations", "1", "convert"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Sales Orders & Reservation",
+      "item": [
+        {
+          "name": "Get All Sales Orders",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "http://localhost:5000/api/sales-orders", "protocol": "http", "host": ["localhost"], "port": "5000", "path": ["api", "sales-orders"] }
+          }
+        },
+        {
+          "name": "Admin Confirm Order (Reserve Stock)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "http://localhost:5000/api/sales-orders/1/confirm", "protocol": "http", "host": ["localhost"], "port": "5000", "path": ["api", "sales-orders", "1", "confirm"] }
+          }
+        },
+        {
+          "name": "Admin Process Dispatch (Deduct Stock)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vehicle_number\": \"MH-12-RN-5116\",\n  \"driver_name\": \"Ramesh Shinde\",\n  \"notes\": \"Direct delivery to Chakan warehouse\"\n}"
+            },
+            "url": { "raw": "http://localhost:5000/api/sales-orders/1/dispatch", "protocol": "http", "host": ["localhost"], "port": "5000", "path": ["api", "sales-orders", "1", "dispatch"] }
+          }
+        }
+      ]
+    }
+  ]
+}
