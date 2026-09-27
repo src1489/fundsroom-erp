@@ -169,8 +169,7 @@ async function createQuotation(req, res) {
 
     const enquiry = enqRes.rows[0];
 
-    // 2. BACKEND CALCULATION & VALIDATION (Mandatory Requirement)
-    // Do not blindly trust frontend totals!
+    // 2. Server-side calculation and price validation
     const calculation = calculateQuotationTotals(items);
 
     // 3. Generate unique sequential Quotation Number

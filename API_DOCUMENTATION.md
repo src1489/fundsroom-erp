@@ -79,7 +79,7 @@ Lists all quotations with linked enquiries and customers.
 
 ### `POST /quotations`
 Generates a commercial quotation against an enquiry.
-> **Note**: Final grand total, discounts, and GST are calculated and enforced by the backend. Client-tampered amounts are safely overwritten.
+Note: Final grand total, discounts, and GST are calculated and enforced by the backend. Client-tampered amounts are safely overwritten.
 - **Access**: `ADMIN`, `SALES`
 - **Request Body**:
 ```json

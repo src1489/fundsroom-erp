@@ -1,4 +1,4 @@
--- Industrial ERP Database Schema for Fundsroom Infotech Technical Case Study
+-- Fundsroom Industrial ERP Database Schema
 -- PostgreSQL Database Initialization
 
 -- Drop existing tables in reverse dependency order

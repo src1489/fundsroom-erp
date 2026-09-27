@@ -67,7 +67,7 @@ async function seed() {
       );
     }
 
-    // 5. Seed a sample Enquiry matching the PDF case study example
+    // 5. Seed sample Enquiry
     // Customer: ABC Engineering Pvt. Ltd.
     // Product A (Ball Valve): 100
     // Product B (Induction Motor): 40

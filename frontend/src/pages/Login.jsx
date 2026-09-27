@@ -129,7 +129,7 @@ export default function Login() {
               marginBottom: '12px',
             }}
           >
-            Demo One-Click Sign In (Case Study Roles)
+            Quick Demo Sign In
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>

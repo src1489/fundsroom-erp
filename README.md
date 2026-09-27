@@ -1,56 +1,58 @@
-# Fundsroom Industrial ERP - Technical Case Study Solution
+# Fundsroom Industrial ERP
 
-Full Stack PERN (PostgreSQL + Express.js + React.js + Node.js) Enterprise Resource Planning application covering the B2B industrial sales & supply chain lifecycle:
+A full-stack enterprise resource planning (ERP) system designed for B2B industrial manufacturing and supply chain operations. It manages the complete order lifecycle from initial customer enquiry to dispatch:
 
-$$\textbf{Customer Enquiry} \longrightarrow \textbf{Quotation} \longrightarrow \textbf{Sales Order} \longrightarrow \textbf{Inventory Reservation} \longrightarrow \textbf{Dispatch}$$
-
----
-
-## 🌟 Key Engineering Highlights
-
-1. **Relational Database Design (PostgreSQL)**:
-   - True normalized 3NF relational design across 12 relational tables.
-   - Enforced database-level check constraints: `CHECK (physical_quantity >= reserved_quantity)` mathematically preventing negative stock balances.
-   - Unique constraints on `sales_orders(quotation_id)` and `dispatches(sales_order_id)` ensuring strict 1:1 business rules and preventing duplicate orders/dispatches.
-
-2. **Backend Concurrency Challenge (Row-Level Locking)**:
-   - When concurrent requests compete for scarce inventory (e.g., Available = 100, User A requests 80, User B requests 50), row-level locks via `SELECT ... FOR UPDATE` inside PostgreSQL transactions guarantee serializable execution. Only one reservation can succeed; the other is rejected with a descriptive HTTP 400 error.
-
-3. **Backend-Enforced Monetary Calculations**:
-   - Quotation line amounts, GST (18%), and commercial discounts are strictly computed on the Node.js backend. Any client-side parameter tampering is safely overwritten.
-
-4. **Strict Backend Role-Based Access Control (RBAC)**:
-   - JWT authentication with bcrypt password hashing.
-   - Restricted endpoints (`/confirm`, `/dispatch`, `/inventory`) are protected at the backend middleware level. Unauthorized calls by Sales Users result in strict HTTP 403 Forbidden responses.
-
-5. **100% Automated Test Suite (10 Passed Tests)**:
-   - Covers all 5 mandatory test scenarios plus the bonus concurrency race-condition test and end-to-end dispatch verification.
+Customer Enquiry -> Quotation -> Sales Order -> Inventory Reservation -> Dispatch
 
 ---
 
-## 🛠 Tech Stack
+## Key Features
 
-- **Frontend**: React 18, Vite, Lucide Icons, Vanilla CSS Design System with responsive glassmorphism.
-- **Backend**: Node.js, Express.js, JWT, bcryptjs, CORS, dotenv.
-- **Database**: PostgreSQL 14 (Connection pooling with `pg`).
-- **Testing**: Jest, Supertest.
+1. **Relational Database Design (PostgreSQL)**
+   - Normalized relational schema across 12 tables.
+   - Database-level check constraints to prevent negative stock (`physical_quantity >= reserved_quantity`).
+   - Unique constraints on orders and dispatches to prevent duplicate processing.
+
+2. **Concurrency Control with Row-Level Locking**
+   - Uses PostgreSQL transactions with `SELECT ... FOR UPDATE` row locks to safely handle simultaneous reservation requests against limited inventory.
+   - Prevents overselling and race conditions when multiple orders compete for the same stock.
+
+3. **Server-Side Pricing & Tax Calculations**
+   - Line totals, discount deductions, and 18% GST are calculated and validated on the backend.
+   - Prevents client-side price tampering.
+
+4. **Role-Based Access Control (RBAC)**
+   - JWT-based authentication with bcrypt password hashing.
+   - Role separation between Admin and Sales users. Protected operations (confirming orders, modifying inventory, processing dispatches) are restricted to Admin users.
+
+5. **Automated Test Suite**
+   - Automated integration tests covering pricing calculations, order conversion rules, inventory reservation constraints, permission checks, and concurrent stock requests.
 
 ---
 
-## 🚀 Quick Start Guide
+## Tech Stack
+
+- **Frontend**: React 18, Vite, Lucide Icons, Vanilla CSS
+- **Backend**: Node.js, Express.js, JWT, bcryptjs, CORS
+- **Database**: PostgreSQL (pg client with connection pooling)
+- **Testing**: Jest, Supertest
+
+---
+
+## Getting Started
 
 ### 1. Prerequisites
-- **Node.js** (v18+ or v20+)
-- **PostgreSQL** running locally on port `5432`
+- Node.js (v18 or higher)
+- PostgreSQL (v14 or higher) running locally on port 5432
 
 ### 2. Database Setup
-Create the database in PostgreSQL:
+Create the PostgreSQL database:
 ```sql
 CREATE DATABASE fundsroom_erp;
 ```
 
 ### 3. Environment Variables
-In `backend/.env`:
+Configure database credentials in `backend/.env`:
 ```env
 PORT=5000
 NODE_ENV=development
@@ -63,94 +65,81 @@ JWT_SECRET=fundsroom_erp_super_secret_jwt_key_2026
 JWT_EXPIRES_IN=24h
 ```
 
-### 4. Database Migrations & Realistic Seeds
-Run migrations and seed the initial industrial products, users, inventory, and enquiries:
+### 4. Database Migration & Seed
+Run migrations to create tables and seed default products, inventory, and user accounts:
 ```bash
 cd backend
 npm run migrate
 npm run seed
 ```
 
-This seeds:
-- **Admin**: `admin@fundsroom.com` / `admin123`
-- **Sales User**: `sales@fundsroom.com` / `sales123`
-- **6 Industrial Products**: Ball Valves, Centrifugal Slurry Pumps, Roller Bearings, Induction Motors, Flange Bolts, Variable Frequency Drives.
-- **Initial sample enquiry** matching the PDF example (`ABC Engineering Pvt. Ltd.`).
+Default seeded accounts:
+- Admin: `admin@fundsroom.com` / `admin123`
+- Sales: `sales@fundsroom.com` / `sales123`
 
 ---
 
-## 🧪 Running Automated Tests
+## Running the Application
 
-Run the full test suite with all 5 mandatory tests + concurrency bonus test:
+### 1. Start the Backend API Server
+```bash
+cd backend
+npm run dev
+```
+The server will start on `http://localhost:5000`.
+Health check endpoint: `http://localhost:5000/api/health`
+
+### 2. Start the Frontend Application
+```bash
+cd frontend
+npm run dev
+```
+The application will open on `http://localhost:3000`.
+
+---
+
+## Running Automated Tests
+
+Run the test suite from the backend directory:
 ```bash
 cd backend
 npm test
 ```
 
-### Test Results Breakdown:
-- ✅ **Test 1**: Quotation total is calculated and enforced correctly by the backend.
-- ✅ **Test 2**: DRAFT and REJECTED quotations cannot create a Sales Order.
-- ✅ **Test 3**: Same quotation cannot generate duplicate Sales Orders.
-- ✅ **Test 4**: Cannot reserve more than available inventory.
-- ✅ **Test 5**: Unauthorized user cannot perform restricted operations (Strict RBAC).
-- ✅ **Bonus Test**: Simultaneous inventory reservations race-condition handling (`Promise.all`).
-- ✅ **Workflow Test**: Physical and reserved stock deduction upon dispatch execution.
+Test coverage includes:
+- Backend quotation calculation and price verification
+- Validation that DRAFT and REJECTED quotations cannot convert to sales orders
+- Prevention of duplicate sales orders for the same quotation
+- Enforcement of inventory reservation limits against available stock
+- Role-based authorization and forbidden endpoint access
+- Concurrent reservation requests and race condition handling
+- Stock deduction upon order dispatch
 
 ---
 
-## 💻 Running the Application
-
-### Start Backend API Server:
-```bash
-cd backend
-npm run dev
-# Server running at http://localhost:5000
-# Health check: http://localhost:5000/api/health
-```
-
-### Start Frontend Application:
-```bash
-cd frontend
-npm run dev
-# App running at http://localhost:3000
-```
-
----
-
-## 🔑 Test Login Credentials
+## User Roles & Credentials
 
 | Role | Email | Password | Permissions |
 | :--- | :--- | :--- | :--- |
-| **ADMIN** | `admin@fundsroom.com` | `admin123` | View all records, manage inventory, confirm sales orders (reserves stock), process dispatches (reduces stock). |
-| **SALES USER** | `sales@fundsroom.com` | `sales123` | Create customers, create enquiries, generate quotations, convert accepted quotes to sales orders, view stock availability. |
+| Admin | admin@fundsroom.com | admin123 | View all records, manage inventory, confirm sales orders (reserve stock), process dispatches (deduct stock). |
+| Sales User | sales@fundsroom.com | sales123 | Create customers, create enquiries, create quotations, convert accepted quotations to sales orders, view inventory balances. |
 
-> **Pro Tip**: The login screen and navigation bar include one-click demo role switcher buttons to effortlessly switch between Admin and Sales user during live demonstration and grading!
-
----
-
-## 📚 Supplementary Documentation
-
-- **[Database Schema & ER Diagram](file:///C:/Users/Sneha/.gemini/antigravity-ide/scratch/fundsroom-erp/DATABASE_SCHEMA.md)**: Full Mermaid ER model, foreign keys, database check constraints, and row-level locking explanation.
-- **[REST API Documentation](file:///C:/Users/Sneha/.gemini/antigravity-ide/scratch/fundsroom-erp/API_DOCUMENTATION.md)**: Detailed input/output payloads for every endpoint.
-- **[Postman Collection](file:///C:/Users/Sneha/.gemini/antigravity-ide/scratch/fundsroom-erp/postman_collection.json)**: Ready-to-import Postman JSON collection.
-- **Recorded Demo Video**: Included directly in the repository root as `fundsroom_erp_demo.webp`.
+The login page provides quick sign-in buttons for both accounts for testing.
 
 ---
 
-## 🎯 Live Verification Round Preparation
+## Project Documentation
 
-Shortlisted candidates will be asked to explain their architecture or make a 20-minute live modification:
+- [Database Schema & ER Model](./DATABASE_SCHEMA.md): Complete table structures, constraints, and relational model.
+- [REST API Documentation](./API_DOCUMENTATION.md): Endpoint specifications, request parameters, and response structures.
+- [Postman Collection](./postman_collection.json): Importable collection for testing API endpoints.
 
-### Scenario A: Add DAMAGED stock to Inventory
-$$\text{Available} = \text{Physical} - \text{Reserved} - \text{Damaged}$$
-1. **Database**:
-   ```sql
-   ALTER TABLE inventory ADD COLUMN damaged_quantity INTEGER NOT NULL DEFAULT 0 CHECK (damaged_quantity >= 0);
-   ALTER TABLE inventory DROP CONSTRAINT chk_available_stock;
-   ALTER TABLE inventory ADD CONSTRAINT chk_available_stock CHECK (physical_quantity >= (reserved_quantity + damaged_quantity));
-   ```
-2. **Backend**: Update `available_quantity` calculation in `SELECT` queries to `(physical_quantity - reserved_quantity - damaged_quantity)`.
-3. **Frontend**: Add a column for Damaged stock in `Inventory.jsx` and display in the KPI cards.
+---
 
-### Scenario B: Order Cancellation & Inventory Release
-Already implemented in `backend/src/controllers/salesOrderController.js` (`cancelSalesOrder`) and supported in the Sales Order modal. Cancelling a `CONFIRMED` order automatically decreases `reserved_quantity`, restoring net available stock immediately!
+## Business Logic Notes
+
+- Available Stock is calculated as:
+  Available Quantity = Physical Quantity - Reserved Quantity
+- When an order is confirmed by Admin, stock is reserved (Physical stays unchanged, Reserved increases).
+- When an order is dispatched, goods leave the facility (both Physical and Reserved decrease by the dispatched quantity).
+- If a confirmed order is cancelled, its reserved inventory is released back to available stock.

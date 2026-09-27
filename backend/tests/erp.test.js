@@ -15,7 +15,7 @@ afterAll(async () => {
   await pool.end();
 });
 
-describe('Industrial ERP - Fundsroom Case Study Mandatory Tests', () => {
+describe('Fundsroom Industrial ERP Integration Tests', () => {
 
   // TEST 1: Quotation total is calculated correctly (backend validation)
   describe('Test 1: Quotation Calculation & Backend Enforced Totals', () => {
@@ -250,8 +250,8 @@ describe('Industrial ERP - Fundsroom Case Study Mandatory Tests', () => {
     });
   });
 
-  // BONUS TEST: Simultaneous inventory reservations (Concurrency race condition)
-  describe('Bonus Test: Concurrency and Race Condition Handling', () => {
+  // Simultaneous inventory reservations (Concurrency race condition)
+  describe('Concurrency and Race Condition Handling', () => {
     it('should handle simultaneous reservation requests and ensure both cannot succeed when stock is insufficient', async () => {
       // Setup a fresh test product with exactly Physical = 100, Reserved = 0, Available = 100
       const prodRes = await pool.query(

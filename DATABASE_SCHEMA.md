@@ -1,6 +1,6 @@
 # Database Architecture & Relational ER Model
 
-This document outlines the complete relational schema design for the **Fundsroom Industrial ERP** built on **PostgreSQL**.
+This document outlines the complete relational schema design for the Fundsroom Industrial ERP built on PostgreSQL.
 
 ---
 
@@ -168,15 +168,16 @@ erDiagram
 ## 2. Business Flow Traceability
 
 Every transaction maintains complete lineage back to its inception:
-$$\text{Customer} \longrightarrow \text{Enquiry} \longrightarrow \text{Quotation} \longrightarrow \text{Sales Order} \longrightarrow \text{Inventory Reservation} \longrightarrow \text{Dispatch}$$
 
-1. **Customer**: Holds legal business entity details.
-2. **Enquiry & Items**: Multi-product requirements with target delivery dates.
+Customer -> Enquiry -> Quotation -> Sales Order -> Inventory Reservation -> Dispatch
+
+1. **Customer**: Stores client contact and business entity details.
+2. **Enquiry & Items**: Multi-product demand records with requested fulfillment dates.
 3. **Quotation & Items**: Calculates unit prices, commercial discount %, and GST %. Enforced and recalculated by the backend.
-4. **Sales Order & Items**: Converted strictly from an `ACCEPTED` quotation.
-5. **Inventory Ledger**: Maintains real-time `physical_quantity` and `reserved_quantity`. Formula:
-   $$\text{Available Quantity} = \text{Physical Quantity} - \text{Reserved Quantity}$$
-6. **Dispatch & Items**: Reduces both `physical_quantity` and `reserved_quantity` atomically.
+4. **Sales Order & Items**: Converted strictly from an ACCEPTED quotation.
+5. **Inventory Ledger**: Tracks real-time stock balances:
+   Available Quantity = Physical Quantity - Reserved Quantity
+6. **Dispatch & Items**: Reduces both physical and reserved quantities atomically when goods are shipped.
 
 ---
 
@@ -195,15 +196,17 @@ $$\text{Customer} \longrightarrow \text{Enquiry} \longrightarrow \text{Quotation
 
 ## 4. Concurrency & Race Condition Resolution
 
-### The Business Challenge
-> Two concurrent requests arrive almost simultaneously:
-> - Available Inventory = 100
-> - User A attempts to reserve 80
-> - User B attempts to reserve 50
-> - Total demand = 130 > 100. Both reservations must not succeed!
+### Problem Statement
+Consider two concurrent requests arriving almost simultaneously:
+- Available Inventory: 100
+- Request A attempts to reserve: 80
+- Request B attempts to reserve: 50
+- Combined demand: 130 > 100
+
+Without locking, both transactions could read available stock as 100 and both proceed, leading to overselling.
 
 ### Technical Solution
-We solve this using **PostgreSQL Transaction Isolation and Row-Level Locking (`SELECT ... FOR UPDATE`)**:
+We solve this using PostgreSQL transaction isolation and row-level locking (`SELECT ... FOR UPDATE`):
 
 ```sql
 BEGIN;
@@ -232,9 +235,9 @@ WHERE id = $orderId;
 COMMIT;
 ```
 
-**Why this works:**
+**How it works:**
 - The first transaction to execute `SELECT ... FOR UPDATE` acquires an exclusive lock on that row.
 - The second concurrent request is put in a blocked queue by PostgreSQL until the first transaction completes.
-- When the first transaction commits, `reserved_quantity` is already updated (e.g. from 0 to 80, leaving 20 available).
-- The second transaction now reads the updated row, observes that only 20 units remain (which is less than the requested 50), and is rejected with an HTTP 400 error.
-- Verified in automated test `tests/erp.test.js` under `Bonus Test: Concurrency and Race Condition Handling`.
+- When the first transaction commits, `reserved_quantity` is already updated (for example, leaving 20 units available).
+- The second transaction reads the updated row, observes that only 20 units remain (which is less than the requested 50), and is rejected with an HTTP 400 error.
+- Verified in automated integration test in `tests/erp.test.js` under Concurrency and Race Condition Handling.

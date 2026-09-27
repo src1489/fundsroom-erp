@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "fundsroom-erp-collection",
     "name": "Fundsroom Industrial ERP APIs",
-    "description": "Collection of all REST API endpoints for Fundsroom Infotech Technical Case Study",
+    "description": "Collection of REST API endpoints for Fundsroom Industrial ERP",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
